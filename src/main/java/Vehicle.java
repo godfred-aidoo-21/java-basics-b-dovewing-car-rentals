@@ -10,21 +10,33 @@ class Vehicle {
 
     public Vehicle(String model, String reg, double dailyRate, double deposit, ChargingRules chargingRules) {
         this.chargingRules = java.util.Objects.requireNonNull(chargingRules, "Charging rules are required");
+        InputValidation.requireText(model, "Vehicle model");
+        InputValidation.requireText(reg, "Vehicle registration");
+        InputValidation.requireAmount(dailyRate, "Daily rate");
+        InputValidation.requireAmount(deposit, "Deposit");
+        String category = chargingRules.category();
+        InputValidation.requireText(category, "Vehicle category");
         this.id = counter;
         counter++;
         this.model = model;
         this.reg = reg;
         this.dailyRate = dailyRate;
         this.deposit = deposit;
-        this.category = chargingRules.category();
+        this.category = category;
     }
 
     public double calculateCost(int days) {
-        return chargingRules.calculateCost(dailyRate, days);
+        InputValidation.requireDays(days);
+        double cost = chargingRules.calculateCost(dailyRate, days);
+        InputValidation.requireAmount(cost, "Calculated cost");
+        return cost;
     }
 
     public double calculateDeposit(Renter renter) {
-        return chargingRules.calculateDeposit(deposit, renter);
+        java.util.Objects.requireNonNull(renter, "Renter is required");
+        double calculatedDeposit = chargingRules.calculateDeposit(deposit, renter);
+        InputValidation.requireAmount(calculatedDeposit, "Calculated deposit");
+        return calculatedDeposit;
     }
 
     public String getModel() {

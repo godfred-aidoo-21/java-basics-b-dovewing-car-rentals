@@ -7,19 +7,34 @@ class Depot {
     private final List<Rental> rentals = new ArrayList<>();
 
     public Depot(String name) {
+        InputValidation.requireText(name, "Depot name");
         this.name = name;
     }
 
     public void addVehicle(Vehicle v) {
+        Objects.requireNonNull(v, "Vehicle is required");
+        if (vehicles.stream().anyMatch(vehicle -> vehicle.getReg().equals(v.getReg()))) {
+            throw new IllegalArgumentException("Vehicle registration already exists: " + v.getReg());
+        }
         vehicles.add(v);
     }
 
     public void addRenter(Renter r) {
+        Objects.requireNonNull(r, "Renter is required");
+        if (renters.contains(r)) {
+            throw new IllegalArgumentException("Renter is already registered: " + r.getId());
+        }
         renters.add(r);
     }
 
     // Rent a vehicle to a renter for a number of days. The rules depend on the class of vehicle.
     public void rent(Renter r, Vehicle v, int days) {
+        requireRegisteredVehicle(v);
+        Objects.requireNonNull(r, "Renter is required");
+        if (!renters.contains(r)) {
+            throw new IllegalArgumentException("Renter is not registered with this depot.");
+        }
+        InputValidation.requireDays(days);
         if (!isAvailable(v)) {
             throw new IllegalStateException("Vehicle " + v.getReg() + " already has an active rental.");
         }
@@ -32,6 +47,7 @@ class Depot {
     }
 
     public void returnVehicle(Vehicle v) {
+        requireRegisteredVehicle(v);
         findActiveRental(v).ifPresent(activeRental ->
                 rentals.set(rentals.indexOf(activeRental), activeRental.returned()));
         System.out.println("Returned " + v.getModel() + " (" + v.getReg() + ")");
@@ -66,5 +82,12 @@ class Depot {
                 .filter(rental -> rental.getVehicleId() == vehicle.getId()
                         && rental.getStatus().equals("ACTIVE"))
                 .findFirst();
+    }
+
+    private void requireRegisteredVehicle(Vehicle vehicle) {
+        Objects.requireNonNull(vehicle, "Vehicle is required");
+        if (!vehicles.contains(vehicle)) {
+            throw new IllegalArgumentException("Vehicle is not registered with this depot.");
+        }
     }
 }

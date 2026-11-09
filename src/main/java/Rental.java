@@ -11,6 +11,11 @@ class Rental {
     private static int counter = 1;
 
     public Rental(Renter renter, Vehicle vehicle, int days, double cost, double deposit) {
+        java.util.Objects.requireNonNull(renter, "Renter is required");
+        java.util.Objects.requireNonNull(vehicle, "Vehicle is required");
+        InputValidation.requireDays(days);
+        InputValidation.requireAmount(cost, "Rental cost");
+        InputValidation.requireAmount(deposit, "Rental deposit");
         this.id = counter;
         counter++;
         this.renterId = renter.getId();
