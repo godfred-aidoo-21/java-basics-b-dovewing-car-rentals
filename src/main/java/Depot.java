@@ -20,9 +20,11 @@ class Depot {
 
     // Rent a vehicle to a renter for a number of days. The rules depend on the class of vehicle.
     public void rent(Renter r, Vehicle v, int days) {
+        if (!isAvailable(v)) {
+            throw new IllegalStateException("Vehicle " + v.getReg() + " already has an active rental.");
+        }
         double cost = v.calculateCost(days);
         double deposit = v.calculateDeposit(r);
-        v.markRented();
         System.out.println("Rented " + v.getModel() + " (" + v.getReg() + ") to " + r.getName()
                 + " for " + days + " days, cost GHS " + cost + ", deposit GHS " + deposit);
         r.recordRental(v.getModel());
@@ -30,7 +32,6 @@ class Depot {
     }
 
     public void returnVehicle(Vehicle v) {
-        v.markAvailable();
         for (int index = 0; index < rentals.size(); index++) {
             Rental rt = rentals.get(index);
             if (rt.getVehicleReg().equals(v.getReg()) && rt.getStatus().equals("ACTIVE")) {
@@ -58,5 +59,11 @@ class Depot {
 
     public List<Renter> getRenters() {
         return List.copyOf(renters);
+    }
+
+    public boolean isAvailable(Vehicle vehicle) {
+        return rentals.stream().noneMatch(rental ->
+                rental.getVehicleReg().equals(vehicle.getReg())
+                        && rental.getStatus().equals("ACTIVE"));
     }
 }

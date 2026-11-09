@@ -4,7 +4,7 @@ class RentalReport {
         System.out.println("=== " + depot.getName() + " - end of day ===");
         System.out.println("Fleet status:");
         for (Vehicle v : depot.getVehicles()) {
-            System.out.println("  " + v.getModel() + " (" + v.getReg() + ", " + v.getCategory() + "): " + v.getStatus());
+            System.out.println("  " + v.getModel() + " (" + v.getReg() + ", " + v.getCategory() + "): " + (depot.isAvailable(v) ? "AVAILABLE" : "RENTED"));
         }
         System.out.println("Active rentals:");
         for (Rental rt : depot.getRentals()) {

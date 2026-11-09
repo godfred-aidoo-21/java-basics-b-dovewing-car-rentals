@@ -5,7 +5,6 @@ class Vehicle {
     private final double dailyRate;
     private final double deposit;
     private final String category; // "ECONOMY" or "PREMIUM"
-    private String status;   // "AVAILABLE" or "RENTED"
     private final int id;
     private static int counter = 1;
 
@@ -18,7 +17,6 @@ class Vehicle {
         this.dailyRate = dailyRate;
         this.deposit = deposit;
         this.category = chargingRules.category();
-        this.status = "AVAILABLE";
     }
 
     public double calculateCost(int days) {
@@ -49,20 +47,8 @@ class Vehicle {
         return category;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
     public int getId() {
         return id;
-    }
-
-    void markRented() {
-        status = "RENTED";
-    }
-
-    void markAvailable() {
-        status = "AVAILABLE";
     }
 }
 

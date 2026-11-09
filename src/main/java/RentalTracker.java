@@ -1,7 +1,5 @@
 // Dovewing Car Rentals - fleet and rental tracker
-// Original program, left behind by a former colleague. It works, but the front
-// desk keeps a paper backup because they do not trust it. Run it first to see why,
-// and look closely at the active rentals in the end-of-day report.
+// Demonstrates successful rentals, a return, and rejection of a double booking.
 
 import java.util.*;
 
@@ -25,8 +23,12 @@ public class RentalTracker {
         d.rent(ama, prado, 2);
         d.returnVehicle(prado);
 
-        // ... and the sort of thing that makes them keep a paper backup:
-        d.rent(ama, vitz, 2); // the Vitz is already out with Kofi, but nothing stops this
+        // The Vitz is still rented to Kofi, so this booking must be rejected.
+        try {
+            d.rent(ama, vitz, 2);
+        } catch (IllegalStateException exception) {
+            System.out.println("Rental rejected: " + exception.getMessage());
+        }
 
         d.printReport();
     }
