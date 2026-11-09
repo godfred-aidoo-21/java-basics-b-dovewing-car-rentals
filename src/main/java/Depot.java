@@ -28,7 +28,7 @@ class Depot {
         System.out.println("Rented " + v.getModel() + " (" + v.getReg() + ") to " + r.getName()
                 + " for " + days + " days, cost GHS " + cost + ", deposit GHS " + deposit);
         r.recordRental(v.getModel());
-        rentals.add(new Rental(r.getName(), v.getReg(), days, cost, deposit));
+        rentals.add(new Rental(r, v, days, cost, deposit));
     }
 
     public void returnVehicle(Vehicle v) {
@@ -63,7 +63,7 @@ class Depot {
 
     private Optional<Rental> findActiveRental(Vehicle vehicle) {
         return rentals.stream()
-                .filter(rental -> rental.getVehicleReg().equals(vehicle.getReg())
+                .filter(rental -> rental.getVehicleId() == vehicle.getId()
                         && rental.getStatus().equals("ACTIVE"))
                 .findFirst();
     }

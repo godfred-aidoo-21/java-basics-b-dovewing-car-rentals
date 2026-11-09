@@ -1,6 +1,8 @@
 class Rental {
     private final int id;
+    private final int renterId;
     private final String renterName;
+    private final int vehicleId;
     private final String vehicleReg;
     private final int days;
     private final double cost;
@@ -8,11 +10,13 @@ class Rental {
     private final String status; // "ACTIVE" or "RETURNED"
     private static int counter = 1;
 
-    public Rental(String renterName, String vehicleReg, int days, double cost, double deposit) {
+    public Rental(Renter renter, Vehicle vehicle, int days, double cost, double deposit) {
         this.id = counter;
         counter++;
-        this.renterName = renterName;
-        this.vehicleReg = vehicleReg;
+        this.renterId = renter.getId();
+        this.renterName = renter.getName();
+        this.vehicleId = vehicle.getId();
+        this.vehicleReg = vehicle.getReg();
         this.days = days;
         this.cost = cost;
         this.deposit = deposit;
@@ -21,6 +25,14 @@ class Rental {
 
     public int getId() {
         return id;
+    }
+
+    public int getRenterId() {
+        return renterId;
+    }
+
+    public int getVehicleId() {
+        return vehicleId;
     }
 
     public String getRenterName() {
@@ -49,7 +61,9 @@ class Rental {
 
     private Rental(Rental original, String status) {
         this.id = original.id;
+        this.renterId = original.renterId;
         this.renterName = original.renterName;
+        this.vehicleId = original.vehicleId;
         this.vehicleReg = original.vehicleReg;
         this.days = original.days;
         this.cost = original.cost;
