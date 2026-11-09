@@ -1,0 +1,34 @@
+public class ManualScenario {
+    public static void main(String[] args) {
+        Depot depot = new Depot("Behaviour comparison");
+        Vehicle economy = new Vehicle("Toyota Vitz", "GT-1234-20", 150, 500, "ECONOMY");
+        Vehicle premium = new Vehicle("Toyota Prado", "GR-5678-22", 600, 2000, "PREMIUM");
+        Renter casual = new Renter("Kofi Mensah", "CASUAL");
+        Renter member = new Renter("Ama Owusu", "MEMBER");
+        depot.addVehicle(economy);
+        depot.addVehicle(premium);
+        depot.addRenter(casual);
+        depot.addRenter(member);
+        depot.printReport();
+        depot.rent(casual, economy, 3);
+        depot.rent(member, premium, 2);
+        depot.printReport();
+        depot.returnVehicle(economy);
+        depot.returnVehicle(premium);
+        depot.printReport();
+        depot.rent(member, economy, 2);
+        depot.rent(casual, premium, 1);
+        depot.printReport();
+        System.out.println("Rental history:");
+        for (Rental rental : depot.getRentals()) {
+            System.out.println("  #" + rental.id + " " + rental.vehicleReg + " " + rental.renterName
+                    + " days=" + rental.days + " cost=" + rental.cost + " deposit=" + rental.deposit
+                    + " status=" + rental.status);
+        }
+        System.out.println("Kofi history: " + casual.history);
+        System.out.println("Ama history: " + member.history);
+        depot.returnVehicle(premium);
+        depot.returnVehicle(premium);
+        depot.printReport();
+    }
+}

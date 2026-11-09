@@ -1,0 +1,50 @@
+
+=== Behaviour comparison - end of day ===
+Fleet status:
+  Toyota Vitz (GT-1234-20, ECONOMY): AVAILABLE
+  Toyota Prado (GR-5678-22, PREMIUM): AVAILABLE
+Active rentals:
+Rented Toyota Vitz (GT-1234-20) to Kofi Mensah for 3 days, cost GHS 450.0, deposit GHS 500.0
+Rented Toyota Prado (GR-5678-22) to Ama Owusu for 2 days, cost GHS 1200.0, deposit GHS 0.0
+
+=== Behaviour comparison - end of day ===
+Fleet status:
+  Toyota Vitz (GT-1234-20, ECONOMY): RENTED
+  Toyota Prado (GR-5678-22, PREMIUM): RENTED
+Active rentals:
+  Rental #1: GT-1234-20 -> Kofi Mensah (3 days)
+  Rental #2: GR-5678-22 -> Ama Owusu (2 days)
+Returned Toyota Vitz (GT-1234-20)
+Returned Toyota Prado (GR-5678-22)
+
+=== Behaviour comparison - end of day ===
+Fleet status:
+  Toyota Vitz (GT-1234-20, ECONOMY): AVAILABLE
+  Toyota Prado (GR-5678-22, PREMIUM): AVAILABLE
+Active rentals:
+Rented Toyota Vitz (GT-1234-20) to Ama Owusu for 2 days, cost GHS 300.0, deposit GHS 0.0
+Rented Toyota Prado (GR-5678-22) to Kofi Mensah for 1 days, cost GHS 600.0, deposit GHS 2000.0
+
+=== Behaviour comparison - end of day ===
+Fleet status:
+  Toyota Vitz (GT-1234-20, ECONOMY): RENTED
+  Toyota Prado (GR-5678-22, PREMIUM): RENTED
+Active rentals:
+  Rental #3: GT-1234-20 -> Ama Owusu (2 days)
+  Rental #4: GR-5678-22 -> Kofi Mensah (1 days)
+Rental history:
+  #1 GT-1234-20 Kofi Mensah days=3 cost=450.0 deposit=500.0 status=RETURNED
+  #2 GR-5678-22 Ama Owusu days=2 cost=1200.0 deposit=0.0 status=RETURNED
+  #3 GT-1234-20 Ama Owusu days=2 cost=300.0 deposit=0.0 status=ACTIVE
+  #4 GR-5678-22 Kofi Mensah days=1 cost=600.0 deposit=2000.0 status=ACTIVE
+Kofi history: [Rented Toyota Vitz, Rented Toyota Prado]
+Ama history: [Rented Toyota Prado, Rented Toyota Vitz]
+Returned Toyota Prado (GR-5678-22)
+Returned Toyota Prado (GR-5678-22)
+
+=== Behaviour comparison - end of day ===
+Fleet status:
+  Toyota Vitz (GT-1234-20, ECONOMY): RENTED
+  Toyota Prado (GR-5678-22, PREMIUM): AVAILABLE
+Active rentals:
+  Rental #3: GT-1234-20 -> Ama Owusu (2 days)

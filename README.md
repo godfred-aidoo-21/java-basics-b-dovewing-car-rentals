@@ -1,4 +1,4 @@
-# Dovewing Car Rentals — Fleet and Rental Tracker
+# Dovewing Car Rentals: Fleet and Rental Tracker
 
 This is the starter repository for the **Java Basics** applied lab. Read the lab
 brief alongside this repository; it explains the business, what you are being
@@ -7,7 +7,7 @@ asked to deliver, and how your work is assessed.
 ## What this is
 
 A small program the Dovewing depot uses to track its fleet and its rentals. It works, but it has become risky to change. Your task is to diagnose it
-and rebuild it well — **not** to change what it does, but to make it safe to
+and rebuild it well: **not** to change what it does, but to make it safe to
 change and impossible to leave in an invalid state.
 
 ## Running it
@@ -86,3 +86,79 @@ Renter history is now derived from the depot's immutable rental records. Call `d
 `Rental.returned()` publicly returns a new immutable value; it cannot update the depot or an existing record. Only `Depot.returnVehicle()` replaces the stored rental. This preserves encapsulation across the model/service package boundary without exposing a status setter.
 
 The application entry point is now `com.dovewing.RentalTracker`. A future regression suite will mirror these packages under `src/test/java/`. Testing remains on hold; this restructuring is checked by compilation and comparison of demonstration output.
+
+## Behaviour preservation
+
+Manual comparisons used baseline revision `aa94489d0b1b0fe498e93d968ce7964ff880e54d` and rebuilt revision `d23d5ac3db3c6831bbfc0e0b519d9e68c1679d02`. The baseline is the earliest committed source snapshot: the unchanged starter classes split into files, before business-logic changes. Each scenario ran in a fresh Java process.
+
+| Behaviour | Result in both versions |
+| --- | --- |
+| Economy, casual renter, three days | GHS 450 cost; GHS 500 deposit. |
+| Premium, member renter, two days | GHS 1,200 cost; no deposit. |
+| Economy, member renter, two days | GHS 300 cost; no deposit. |
+| Premium, casual renter, one day | GHS 600 cost; GHS 2,000 deposit. |
+| Returns and re-rental | Same messages; completed records retained; new rental IDs assigned. |
+| Reports | Same formatting, fleet order, rental order, and active-rental details. |
+| Renter history | Same entries and ordering within the captured single-depot scenario. |
+| Repeated return of a registered vehicle | Same message; unrelated active rental remains unchanged. |
+
+The [original valid output](docs/evidence/valid-original.txt) and [rebuilt valid output](docs/evidence/valid-rebuilt.txt) match exactly after capture as UTF-8 text with LF line endings. The [original scenario listing](docs/evidence/valid-scenario-original.java.txt) and [rebuilt listing](docs/evidence/valid-scenario-rebuilt.java.txt) show the manual steps. Their extra history lines expose records for comparison; they do not add application features.
+
+**Intentional correction:** the [original demonstration](docs/evidence/demo-original.txt) double-books the Vitz. The [rebuilt demonstration](docs/evidence/demo-rebuilt.txt) rejects Ama's conflicting booking, retains Kofi's active rental, and still prints the report.
+
+**Other changes:** [input validation](#input-validation-and-intentional-behaviour-changes) introduces additional rejected inputs. The entry point and constructors use the new package and charging-rule APIs. History is read through `depot.getRenterHistory(renter)` and is now scoped to that depot; multi-depot history requires explicit aggregation. These departures are not claims of identical behaviour for every possible input or caller.
+
+These are manual captures, not an automated regression suite. Automated testing remains on hold, including comprehensive validation, rejection-side-effect, encapsulation, and van-policy coverage. No production code changed to record this evidence.
+
+<details>
+<summary>Reproduce the manual comparison</summary>
+
+Run the following PowerShell commands from the repository root with Git and a JDK available. They export both recorded revisions into a new ignored target directory, leaving the working sources untouched. The scenario listings are manual drivers without assertions.
+
+```powershell
+$replay = Join-Path (Get-Location) ('target/evidence-replay-' + [guid]::NewGuid().ToString('N'))
+$utf8 = New-Object System.Text.UTF8Encoding($false)
+
+function Export-JavaSources($revision, $destination) {
+    $paths = git ls-tree -r --name-only $revision -- src/main/java
+    foreach ($path in $paths) {
+        if (-not $path.EndsWith('.java')) { continue }
+        $relative = $path.Substring('src/main/java/'.Length)
+        $outputPath = Join-Path $destination $relative
+        New-Item -ItemType Directory -Path (Split-Path $outputPath) -Force | Out-Null
+        $lines = git show ($revision + ':' + $path)
+        if ($LASTEXITCODE -ne 0) { throw 'Source export failed.' }
+        [System.IO.File]::WriteAllText($outputPath, ($lines -join "`n") + "`n", $utf8)
+    }
+}
+
+$originalSrc = Join-Path $replay 'original-src'
+$rebuiltSrc = Join-Path $replay 'rebuilt-src'
+$originalClasses = Join-Path $replay 'original-classes'
+$rebuiltClasses = Join-Path $replay 'rebuilt-classes'
+Export-JavaSources 'aa94489d0b1b0fe498e93d968ce7964ff880e54d' $originalSrc
+Export-JavaSources 'd23d5ac3db3c6831bbfc0e0b519d9e68c1679d02' $rebuiltSrc
+Copy-Item docs/evidence/valid-scenario-original.java.txt (Join-Path $originalSrc 'ManualScenario.java')
+Copy-Item docs/evidence/valid-scenario-rebuilt.java.txt (Join-Path $rebuiltSrc 'ManualScenario.java')
+New-Item -ItemType Directory -Path $originalClasses, $rebuiltClasses -Force | Out-Null
+
+$originalFiles = Get-ChildItem $originalSrc -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
+$rebuiltFiles = Get-ChildItem $rebuiltSrc -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
+javac -d $originalClasses $originalFiles
+if ($LASTEXITCODE -ne 0) { throw 'Original compilation failed.' }
+javac -d $rebuiltClasses $rebuiltFiles
+if ($LASTEXITCODE -ne 0) { throw 'Rebuilt compilation failed.' }
+
+$originalOutput = java -cp $originalClasses ManualScenario
+if ($LASTEXITCODE -ne 0) { throw 'Original scenario failed.' }
+$rebuiltOutput = java -cp $rebuiltClasses ManualScenario
+if ($LASTEXITCODE -ne 0) { throw 'Rebuilt scenario failed.' }
+Compare-Object $originalOutput $rebuiltOutput -SyncWindow 0 -CaseSensitive
+# No differences should be displayed.
+
+java -cp $originalClasses RentalTracker
+java -cp $rebuiltClasses com.dovewing.RentalTracker
+# Inspect the intentional double-booking difference in these two runs.
+```
+
+</details>
