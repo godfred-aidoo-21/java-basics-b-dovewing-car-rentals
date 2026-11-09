@@ -20,26 +20,11 @@ class Depot {
 
     // Rent a vehicle to a renter for a number of days. The rules depend on the class of vehicle.
     public void rent(Renter r, Vehicle v, int days) {
-        double cost = 0, deposit = 0;
-        if (v.category.equals("ECONOMY")) {
-            cost = v.dailyRate * days;
-            deposit = v.deposit;
-            if (r.kind.equals("MEMBER")) {
-                deposit = 0; // members have their deposit waived
-            }
-            v.status = "RENTED";
-            System.out.println("Rented " + v.model + " (" + v.reg + ") to " + r.name
-                    + " for " + days + " days, cost GHS " + cost + ", deposit GHS " + deposit);
-        } else if (v.category.equals("PREMIUM")) {
-            cost = v.dailyRate * days;
-            deposit = v.deposit;
-            if (r.kind.equals("MEMBER")) {
-                deposit = 0; // members have their deposit waived
-            }
-            v.status = "RENTED";
-            System.out.println("Rented " + v.model + " (" + v.reg + ") to " + r.name
-                    + " for " + days + " days, cost GHS " + cost + ", deposit GHS " + deposit);
-        }
+        double cost = v.calculateCost(days);
+        double deposit = v.calculateDeposit(r);
+        v.status = "RENTED";
+        System.out.println("Rented " + v.model + " (" + v.reg + ") to " + r.name
+                + " for " + days + " days, cost GHS " + cost + ", deposit GHS " + deposit);
         r.history.add("Rented " + v.model);
         rentals.add(new Rental(r.name, v.reg, days, cost, deposit));
     }

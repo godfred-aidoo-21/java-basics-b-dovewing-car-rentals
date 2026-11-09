@@ -10,8 +10,8 @@ public class RentalTracker {
     public static void main(String[] args) {
         Depot d = new Depot("Dovewing Car Rentals");
 
-        Vehicle vitz = new Vehicle("Toyota Vitz", "GT-1234-20", 150.00, 500.00, "ECONOMY");
-        Vehicle prado = new Vehicle("Toyota Prado", "GR-5678-22", 600.00, 2000.00, "PREMIUM");
+        Vehicle vitz = new Vehicle("Toyota Vitz", "GT-1234-20", 150.00, 500.00, StandardChargingRules.ECONOMY);
+        Vehicle prado = new Vehicle("Toyota Prado", "GR-5678-22", 600.00, 2000.00, StandardChargingRules.PREMIUM);
         d.addVehicle(vitz);
         d.addVehicle(prado);
 
