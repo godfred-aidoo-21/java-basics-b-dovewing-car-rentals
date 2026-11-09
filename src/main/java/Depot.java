@@ -32,12 +32,8 @@ class Depot {
     }
 
     public void returnVehicle(Vehicle v) {
-        for (int index = 0; index < rentals.size(); index++) {
-            Rental rt = rentals.get(index);
-            if (rt.getVehicleReg().equals(v.getReg()) && rt.getStatus().equals("ACTIVE")) {
-                rentals.set(index, rt.returned());
-            }
-        }
+        findActiveRental(v).ifPresent(activeRental ->
+                rentals.set(rentals.indexOf(activeRental), activeRental.returned()));
         System.out.println("Returned " + v.getModel() + " (" + v.getReg() + ")");
     }
 
@@ -62,8 +58,13 @@ class Depot {
     }
 
     public boolean isAvailable(Vehicle vehicle) {
-        return rentals.stream().noneMatch(rental ->
-                rental.getVehicleReg().equals(vehicle.getReg())
-                        && rental.getStatus().equals("ACTIVE"));
+        return findActiveRental(vehicle).isEmpty();
+    }
+
+    private Optional<Rental> findActiveRental(Vehicle vehicle) {
+        return rentals.stream()
+                .filter(rental -> rental.getVehicleReg().equals(vehicle.getReg())
+                        && rental.getStatus().equals("ACTIVE"))
+                .findFirst();
     }
 }
