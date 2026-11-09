@@ -14,6 +14,6 @@ enum StandardChargingRules implements ChargingRules {
 
     @Override
     public double calculateDeposit(double standardDeposit, Renter renter) {
-        return renter.kind.equals("MEMBER") ? 0 : standardDeposit;
+        return renter.getKind().equals("MEMBER") ? 0 : standardDeposit;
     }
 }

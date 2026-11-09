@@ -1,13 +1,13 @@
 class Vehicle {
     private final ChargingRules chargingRules;
-    public String model;
-    public String reg;
-    public double dailyRate;
-    public double deposit;
-    public String category; // "ECONOMY" or "PREMIUM"
-    public String status;   // "AVAILABLE" or "RENTED"
-    public int id;
-    static int counter = 1;
+    private final String model;
+    private final String reg;
+    private final double dailyRate;
+    private final double deposit;
+    private final String category; // "ECONOMY" or "PREMIUM"
+    private String status;   // "AVAILABLE" or "RENTED"
+    private final int id;
+    private static int counter = 1;
 
     public Vehicle(String model, String reg, double dailyRate, double deposit, ChargingRules chargingRules) {
         this.chargingRules = java.util.Objects.requireNonNull(chargingRules, "Charging rules are required");
@@ -27,6 +27,42 @@ class Vehicle {
 
     public double calculateDeposit(Renter renter) {
         return chargingRules.calculateDeposit(deposit, renter);
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public String getReg() {
+        return reg;
+    }
+
+    public double getDailyRate() {
+        return dailyRate;
+    }
+
+    public double getDeposit() {
+        return deposit;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    void markRented() {
+        status = "RENTED";
+    }
+
+    void markAvailable() {
+        status = "AVAILABLE";
     }
 }
 
