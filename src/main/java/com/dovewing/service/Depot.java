@@ -1,6 +1,16 @@
-import java.util.*;
+package com.dovewing.service;
 
-class Depot {
+import com.dovewing.model.Vehicle;
+import com.dovewing.model.Renter;
+import com.dovewing.model.Rental;
+import com.dovewing.reporting.RentalReport;
+import com.dovewing.validation.InputValidation;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+public class Depot {
     private final String name;
     private final List<Vehicle> vehicles = new ArrayList<>();
     private final List<Renter> renters = new ArrayList<>();
@@ -42,7 +52,6 @@ class Depot {
         double deposit = v.calculateDeposit(r);
         System.out.println("Rented " + v.getModel() + " (" + v.getReg() + ") to " + r.getName()
                 + " for " + days + " days, cost GHS " + cost + ", deposit GHS " + deposit);
-        r.recordRental(v.getModel());
         rentals.add(new Rental(r, v, days, cost, deposit));
     }
 
@@ -89,5 +98,13 @@ class Depot {
         if (!vehicles.contains(vehicle)) {
             throw new IllegalArgumentException("Vehicle is not registered with this depot.");
         }
+    }
+
+    public List<String> getRenterHistory(Renter renter) {
+        Objects.requireNonNull(renter, "Renter is required");
+        return rentals.stream()
+                .filter(rental -> rental.getRenterId() == renter.getId())
+                .map(rental -> "Rented " + rental.getVehicleModel())
+                .toList();
     }
 }

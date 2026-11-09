@@ -1,9 +1,14 @@
-class Rental {
+package com.dovewing.model;
+
+import com.dovewing.validation.InputValidation;
+
+public class Rental {
     private final int id;
     private final int renterId;
     private final String renterName;
     private final int vehicleId;
     private final String vehicleReg;
+    private final String vehicleModel;
     private final int days;
     private final double cost;
     private final double deposit;
@@ -22,6 +27,7 @@ class Rental {
         this.renterName = renter.getName();
         this.vehicleId = vehicle.getId();
         this.vehicleReg = vehicle.getReg();
+        this.vehicleModel = vehicle.getModel();
         this.days = days;
         this.cost = cost;
         this.deposit = deposit;
@@ -70,14 +76,19 @@ class Rental {
         this.renterName = original.renterName;
         this.vehicleId = original.vehicleId;
         this.vehicleReg = original.vehicleReg;
+        this.vehicleModel = original.vehicleModel;
         this.days = original.days;
         this.cost = original.cost;
         this.deposit = original.deposit;
         this.status = status;
     }
 
-    Rental returned() {
+    public Rental returned() {
         return new Rental(this, "RETURNED");
+    }
+
+    public String getVehicleModel() {
+        return vehicleModel;
     }
 }
 

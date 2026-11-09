@@ -1,4 +1,9 @@
-class Vehicle {
+package com.dovewing.model;
+
+import com.dovewing.pricing.ChargingRules;
+import com.dovewing.validation.InputValidation;
+
+public class Vehicle {
     private final ChargingRules chargingRules;
     private final String model;
     private final String reg;

@@ -1,4 +1,10 @@
-class RentalReport {
+package com.dovewing.reporting;
+
+import com.dovewing.model.Vehicle;
+import com.dovewing.model.Rental;
+import com.dovewing.service.Depot;
+
+public class RentalReport {
     public static void print(Depot depot) {
         System.out.println();
         System.out.println("=== " + depot.getName() + " - end of day ===");

@@ -1,10 +1,11 @@
-import java.util.*;
+package com.dovewing.model;
 
-class Renter {
+import com.dovewing.validation.InputValidation;
+
+public class Renter {
     private final String name;
     private final String kind; // "CASUAL" or "MEMBER"
     private final int id;
-    private final List<String> history = new ArrayList<>();
     private static int counter = 1;
 
     public Renter(String name, String kind) {
@@ -28,14 +29,6 @@ class Renter {
 
     public int getId() {
         return id;
-    }
-
-    public List<String> getHistory() {
-        return List.copyOf(history);
-    }
-
-    void recordRental(String vehicleModel) {
-        history.add("Rented " + vehicleModel);
     }
 }
 

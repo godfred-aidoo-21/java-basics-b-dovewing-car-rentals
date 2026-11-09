@@ -1,7 +1,13 @@
+package com.dovewing;
+
+import com.dovewing.model.Vehicle;
+import com.dovewing.model.Renter;
+import com.dovewing.service.Depot;
+import com.dovewing.pricing.StandardChargingRules;
+
 // Dovewing Car Rentals - fleet and rental tracker
 // Demonstrates successful rentals, a return, and rejection of a double booking.
 
-import java.util.*;
 
 public class RentalTracker {
 

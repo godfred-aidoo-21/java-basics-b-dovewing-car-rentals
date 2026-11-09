@@ -1,4 +1,8 @@
-enum StandardChargingRules implements ChargingRules {
+package com.dovewing.pricing;
+
+import com.dovewing.model.Renter;
+
+public enum StandardChargingRules implements ChargingRules {
     ECONOMY,
     PREMIUM;
 
