@@ -21,18 +21,6 @@ mvn compile
 mvn exec:java -Dexec.mainClass=com.dovewing.RentalTracker
 ```
 
-**Or directly with the JDK:**
-
-```bash
-# PowerShell
-$sourceFiles = Get-ChildItem src/main/java -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
-javac -d target/classes $sourceFiles
-java -cp target/classes com.dovewing.RentalTracker
-```
-
-Run it first, before you change anything, so you can see how it currently
-behaves. Look carefully at the end-of-day report.
-
 ## What to hand in
 
 See the lab brief for the full list: a written diagnosis, your rebuilt version
@@ -111,58 +99,6 @@ The [original valid output](docs/evidence/valid-original.txt) and [rebuilt valid
 
 These manual captures remain historical comparisons against the original source and do not constitute an automated regression suite. The default demonstration output is preserved; optional receipt output is an explicitly requested extension.
 
-<details>
-<summary>Reproduce the manual comparison</summary>
-
-Run the following PowerShell commands from the repository root with Git and a JDK available. They export both recorded revisions into a new ignored target directory, leaving the working sources untouched. The scenario listings are manual drivers without assertions.
-
-```powershell
-$replay = Join-Path (Get-Location) ('target/evidence-replay-' + [guid]::NewGuid().ToString('N'))
-$utf8 = New-Object System.Text.UTF8Encoding($false)
-
-function Export-JavaSources($revision, $destination) {
-    $paths = git ls-tree -r --name-only $revision -- src/main/java
-    foreach ($path in $paths) {
-        if (-not $path.EndsWith('.java')) { continue }
-        $relative = $path.Substring('src/main/java/'.Length)
-        $outputPath = Join-Path $destination $relative
-        New-Item -ItemType Directory -Path (Split-Path $outputPath) -Force | Out-Null
-        $lines = git show ($revision + ':' + $path)
-        if ($LASTEXITCODE -ne 0) { throw 'Source export failed.' }
-        [System.IO.File]::WriteAllText($outputPath, ($lines -join "`n") + "`n", $utf8)
-    }
-}
-
-$originalSrc = Join-Path $replay 'original-src'
-$rebuiltSrc = Join-Path $replay 'rebuilt-src'
-$originalClasses = Join-Path $replay 'original-classes'
-$rebuiltClasses = Join-Path $replay 'rebuilt-classes'
-Export-JavaSources 'aa94489d0b1b0fe498e93d968ce7964ff880e54d' $originalSrc
-Export-JavaSources 'd23d5ac3db3c6831bbfc0e0b519d9e68c1679d02' $rebuiltSrc
-Copy-Item docs/evidence/valid-scenario-original.java.txt (Join-Path $originalSrc 'ManualScenario.java')
-Copy-Item docs/evidence/valid-scenario-rebuilt.java.txt (Join-Path $rebuiltSrc 'ManualScenario.java')
-New-Item -ItemType Directory -Path $originalClasses, $rebuiltClasses -Force | Out-Null
-
-$originalFiles = Get-ChildItem $originalSrc -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
-$rebuiltFiles = Get-ChildItem $rebuiltSrc -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
-javac -d $originalClasses $originalFiles
-if ($LASTEXITCODE -ne 0) { throw 'Original compilation failed.' }
-javac -d $rebuiltClasses $rebuiltFiles
-if ($LASTEXITCODE -ne 0) { throw 'Rebuilt compilation failed.' }
-
-$originalOutput = java -cp $originalClasses ManualScenario
-if ($LASTEXITCODE -ne 0) { throw 'Original scenario failed.' }
-$rebuiltOutput = java -cp $rebuiltClasses ManualScenario
-if ($LASTEXITCODE -ne 0) { throw 'Rebuilt scenario failed.' }
-Compare-Object $originalOutput $rebuiltOutput -SyncWindow 0 -CaseSensitive
-# No differences should be displayed.
-
-java -cp $originalClasses RentalTracker
-java -cp $rebuiltClasses com.dovewing.RentalTracker
-# Inspect the intentional double-booking difference in these two runs.
-```
-
-</details>
 
 ## Additional improvement: optional rental receipts
 
@@ -189,3 +125,43 @@ If booking is rejected, no rental is returned and the receipt call is not reache
 ### Departure from the original proposal
 
 DIAGNOSIS.md remains the original pre-build proposal. Its suggested additional improvement was an automated regression suite. During implementation, the owner selected optional receipts instead because they provide a simple booking summary with direct value to front-desk staff. The uncommitted test suite and its JUnit/Maven runner configuration were removed. No regression suite or automated-test completion is claimed as a submission deliverable. Manual evidence remains under Behaviour preservation above.
+
+## Final design notes
+
+### 1. Give each responsibility a clear home
+
+The original put every class in one file and mixed pricing, bookings, and reporting inside Depot. Each class now has its own file, grouped by responsibility. This makes it easier to find the right code and review a change. Splitting files alone would not fix the booking defects, so the rules and data ownership were separated too.
+
+### 2. Use active rentals to determine availability
+
+Keeping a vehicle status alongside rental status meant the two could disagree. Depot now checks its active rental records to determine availability and rejects another booking before calculating charges or changing records. Returns use the same lookup. There is no separate vehicle status to update or forget. This protects the business from promising the same vehicle twice within the depot's current single-threaded workflow.
+
+### 3. Protect data instead of exposing setters
+
+Fields are private, fixed details are final, and callers receive read-only collection snapshots. Rental records are immutable. Returning a vehicle creates a returned copy with the same ID and agreement details, which Depot stores in place of the active record. Creating a copy outside Depot cannot change its stored records. This was chosen over public status setters because callers should not be able to bypass the booking and return process.
+
+### 4. Supply charging rules instead of adding more booking branches
+
+Vehicle uses a ChargingRules implementation to calculate cost and deposit. Economy and premium currently follow the same calculation, so StandardChargingRules shares that logic through two enum values. The interface remains open to other implementations.
+
+When commercial vans arrive, add a policy implementing ChargingRules and supply it when creating a van. Its deposit calculation can differ without changing Depot's booking or return methods or the report. The actual van rules are not yet known and have not been invented. The old design would require another category branch inside Depot.rent(), beside repeated booking and output code.
+
+Composition was chosen over vehicle subclasses because the known difference is charging behaviour. A separate policy keeps that difference small and easy to explain.
+
+### 5. Identify people and vehicles by stable IDs
+
+Rental records keep vehicle and renter IDs, while retaining names, registrations, and vehicle details for display. Names can be shared by different people; they should not identify a customer. Availability and returns match the vehicle ID. Duplicate registrations are also rejected when a vehicle is added to the depot.
+
+### 6. Derive history from the records already owned by Depot
+
+Maintaining a separate writable renter history would create another record to keep consistent. Depot now derives history from its rental records, including completed rentals. This also avoids exposing a history-writing method across packages. The API changed to depot.getRenterHistory(renter), and its results cover that depot only. This is a documented departure from the original renter-owned history.
+
+### 7. Keep receipt printing separate from booking
+
+Depot.rent() returns the recorded rental, and RentalReceipt prints its stored details only when requested. Always printing a receipt inside rent() would change every successful booking's output. Keeping the call separate preserves the default demonstration and lets the optional --receipt argument demonstrate the improvement. The receipt summarises the agreement without claiming that payment was received.
+
+### Changes from the proposal and verification
+
+The original diagnosis remains unchanged as the pre-build proposal. The final structure adds explicit packages and a shared enum for the existing charging rules. Optional rental receipts replaced the proposed regression suite as the additional improvement. Validation introduces further rejected inputs, and the history API has changed; both are explained above rather than described as unchanged behaviour.
+
+The Behaviour preservation section records the manual comparison with the original, including matching charges, messages, reports, and rental history for valid scenarios. After receipts were added, compilation succeeded and the default demonstration output remained unchanged. Running with --receipt displayed two successful-booking receipts and none for the rejected booking. No automated regression suite is included.
