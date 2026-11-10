@@ -1,6 +1,9 @@
 package com.dovewing;
 
 import com.dovewing.model.Vehicle;
+import com.dovewing.model.Rental;
+import com.dovewing.reporting.RentalReceipt;
+import java.util.Arrays;
 import com.dovewing.model.Renter;
 import com.dovewing.service.Depot;
 import com.dovewing.pricing.StandardChargingRules;
@@ -12,6 +15,7 @@ import com.dovewing.pricing.StandardChargingRules;
 public class RentalTracker {
 
     public static void main(String[] args) {
+        boolean printReceipts = Arrays.asList(args).contains("--receipt");
         Depot d = new Depot("Dovewing Car Rentals");
 
         Vehicle vitz = new Vehicle("Toyota Vitz", "GT-1234-20", 150.00, 500.00, StandardChargingRules.ECONOMY);
@@ -25,8 +29,14 @@ public class RentalTracker {
         d.addRenter(ama);
 
         // a normal day
-        d.rent(kofi, vitz, 3);
-        d.rent(ama, prado, 2);
+        Rental kofiRental = d.rent(kofi, vitz, 3);
+        if (printReceipts) {
+            RentalReceipt.print(kofiRental);
+        }
+        Rental amaRental = d.rent(ama, prado, 2);
+        if (printReceipts) {
+            RentalReceipt.print(amaRental);
+        }
         d.returnVehicle(prado);
 
         // The Vitz is still rented to Kofi, so this booking must be rejected.

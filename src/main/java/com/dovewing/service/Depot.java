@@ -38,7 +38,7 @@ public class Depot {
     }
 
     // Rent a vehicle to a renter for a number of days. The rules depend on the class of vehicle.
-    public void rent(Renter r, Vehicle v, int days) {
+    public Rental rent(Renter r, Vehicle v, int days) {
         requireRegisteredVehicle(v);
         Objects.requireNonNull(r, "Renter is required");
         if (!renters.contains(r)) {
@@ -52,7 +52,9 @@ public class Depot {
         double deposit = v.calculateDeposit(r);
         System.out.println("Rented " + v.getModel() + " (" + v.getReg() + ") to " + r.getName()
                 + " for " + days + " days, cost GHS " + cost + ", deposit GHS " + deposit);
-        rentals.add(new Rental(r, v, days, cost, deposit));
+        Rental rental = new Rental(r, v, days, cost, deposit);
+        rentals.add(rental);
+        return rental;
     }
 
     public void returnVehicle(Vehicle v) {

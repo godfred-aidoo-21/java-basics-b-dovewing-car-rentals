@@ -9,6 +9,7 @@ public class Rental {
     private final int vehicleId;
     private final String vehicleReg;
     private final String vehicleModel;
+    private final String vehicleCategory;
     private final int days;
     private final double cost;
     private final double deposit;
@@ -28,6 +29,7 @@ public class Rental {
         this.vehicleId = vehicle.getId();
         this.vehicleReg = vehicle.getReg();
         this.vehicleModel = vehicle.getModel();
+        this.vehicleCategory = vehicle.getCategory();
         this.days = days;
         this.cost = cost;
         this.deposit = deposit;
@@ -77,6 +79,7 @@ public class Rental {
         this.vehicleId = original.vehicleId;
         this.vehicleReg = original.vehicleReg;
         this.vehicleModel = original.vehicleModel;
+        this.vehicleCategory = original.vehicleCategory;
         this.days = original.days;
         this.cost = original.cost;
         this.deposit = original.deposit;
@@ -89,6 +92,10 @@ public class Rental {
 
     public String getVehicleModel() {
         return vehicleModel;
+    }
+
+    public String getVehicleCategory() {
+        return vehicleCategory;
     }
 }
 

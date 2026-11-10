@@ -12,7 +12,7 @@ change and impossible to leave in an invalid state.
 
 ## Running it
 
-The program is plain Java (no external dependencies). You need JDK 21.
+The application uses plain Java with no external dependencies. You need JDK 21.
 
 **With Maven:**
 
@@ -55,28 +55,29 @@ These safeguards implement diagnosis item 7. The starter accepted these invalid 
 
 Missing object arguments raise NullPointerException with an explanatory message. Invalid values and registration violations raise IllegalArgumentException. Duplicate active bookings continue to raise IllegalStateException. Failed validation does not consume an entity or rental ID or update depot records or renter history. A custom charging policy remains responsible for its own external side effects; the depot does not record a rental if its calculations fail validation.
 
-Verification for this step compares the demonstration output before and after validation and runs temporary boundary checks. The permanent regression suite is a separate planned step.
+The validation step was checked by comparing demonstration output and running temporary boundary checks. No automated regression suite is included in the submission.
 
 ## Package structure
 
 Production sources now live under `src/main/java/com/dovewing`:
 
 ```text
-com/amalitech/dovewing/
-|-- RentalTracker.java
+com/dovewing/
+|-- RentalTracker.java             # Runs the demo and handles the optional receipt flag.
 |-- model/
-|   |-- Vehicle.java
-|   |-- Renter.java
-|   `-- Rental.java
+|   |-- Vehicle.java               # Stores vehicle details and delegates charge calculations.
+|   |-- Renter.java                # Stores customer identity and membership details.
+|   `-- Rental.java                # Stores an immutable rental agreement and its status.
 |-- service/
-|   `-- Depot.java
+|   `-- Depot.java                 # Manages registration, bookings, returns, availability, and history.
 |-- pricing/
-|   |-- ChargingRules.java
-|   `-- StandardChargingRules.java
+|   |-- ChargingRules.java         # Defines the contract for cost and deposit calculations.
+|   `-- StandardChargingRules.java # Supplies the economy and premium charging rules.
 |-- reporting/
-|   `-- RentalReport.java
+|   |-- RentalReport.java          # Prints fleet availability and active rentals.
+|   `-- RentalReceipt.java         # Prints an optional receipt from recorded rental details.
 `-- validation/
-    `-- InputValidation.java
+    `-- InputValidation.java       # Checks required text, positive durations, and valid amounts.
 ```
 
 This extends the diagnosis's separation of responsibilities into explicit packages. Cross-package types and stateless validation methods are public; fields and depot collections remain private.
@@ -85,7 +86,7 @@ Renter history is now derived from the depot's immutable rental records. Call `d
 
 `Rental.returned()` publicly returns a new immutable value; it cannot update the depot or an existing record. Only `Depot.returnVehicle()` replaces the stored rental. This preserves encapsulation across the model/service package boundary without exposing a status setter.
 
-The application entry point is now `com.dovewing.RentalTracker`. A future regression suite will mirror these packages under `src/test/java/`. Testing remains on hold; this restructuring is checked by compilation and comparison of demonstration output.
+The application entry point is `com.dovewing.RentalTracker`. The package restructuring was verified by compilation and comparison of demonstration output. Optional rental receipts are the chosen additional improvement.
 
 ## Behaviour preservation
 
@@ -108,7 +109,7 @@ The [original valid output](docs/evidence/valid-original.txt) and [rebuilt valid
 
 **Other changes:** [input validation](#input-validation-and-intentional-behaviour-changes) introduces additional rejected inputs. The entry point and constructors use the new package and charging-rule APIs. History is read through `depot.getRenterHistory(renter)` and is now scoped to that depot; multi-depot history requires explicit aggregation. These departures are not claims of identical behaviour for every possible input or caller.
 
-These are manual captures, not an automated regression suite. Automated testing remains on hold, including comprehensive validation, rejection-side-effect, encapsulation, and van-policy coverage. No production code changed to record this evidence.
+These manual captures remain historical comparisons against the original source and do not constitute an automated regression suite. The default demonstration output is preserved; optional receipt output is an explicitly requested extension.
 
 <details>
 <summary>Reproduce the manual comparison</summary>
@@ -162,3 +163,29 @@ java -cp $rebuiltClasses com.dovewing.RentalTracker
 ```
 
 </details>
+
+## Additional improvement: optional rental receipts
+
+The selected improvement beyond the brief is a rental receipt that staff can print after a successful booking. It presents the agreed vehicle, renter, duration, rental cost, and deposit together. It is a rental agreement summary, not proof of payment; the application does not track payments.
+
+Receipts are optional so existing confirmations and reports stay unchanged. Run the usual demonstration without arguments for its existing output. To request receipts for its two successful bookings:
+
+```powershell
+mvn compile
+java -cp target/classes com.dovewing.RentalTracker --receipt
+```
+
+Calling code can also request one explicitly:
+
+```java
+Rental rental = depot.rent(kofi, vitz, 3);
+RentalReceipt.print(rental);
+```
+
+`Depot.rent()` now returns the immutable rental it records. Existing source callers can ignore the return value. `RentalReceipt` lives in the reporting package and only reads the rental's stored details. The category is captured with the rental and retained when it is returned. Costs and deposits are not recalculated or combined into an amount paid. Receipt printing changes no rental records, IDs, history, or availability. Money on the receipt uses two decimal places and a stable decimal point; existing booking messages retain their original formatting.
+
+If booking is rejected, no rental is returned and the receipt call is not reached. The optional demonstration prints two receipts, then handles the conflicting booking as before. A stored receipt may be printed again without creating another booking.
+
+### Departure from the original proposal
+
+DIAGNOSIS.md remains the original pre-build proposal. Its suggested additional improvement was an automated regression suite. During implementation, the owner selected optional receipts instead because they provide a simple booking summary with direct value to front-desk staff. The uncommitted test suite and its JUnit/Maven runner configuration were removed. No regression suite or automated-test completion is claimed as a submission deliverable. Manual evidence remains under Behaviour preservation above.
