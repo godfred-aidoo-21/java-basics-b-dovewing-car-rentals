@@ -227,6 +227,71 @@ class DepotRegressionTest {
                 capture(() -> depot.rent(kofi, vitz, 3)));
     }
 
+
+    @Test
+    void renterHistoryCombinesDepotsInBookingOrderNotRegistrationOrder() {
+        Depot second = new Depot("Second depot");
+        second.addRenter(kofi);
+        Vehicle van = new Vehicle("Van", "SECOND-1", 200, 600, StandardChargingRules.PREMIUM);
+        second.addVehicle(van);
+        List<String> emptySnapshot = kofi.getHistory();
+        // Book at the second registered depot first to detect grouping by depot.
+        capture(() -> {
+            second.rent(kofi, van, 1);
+            depot.rent(kofi, vitz, 2);
+            second.returnVehicle(van);
+            second.rent(kofi, van, 3);
+        });
+        List<String> expected = List.of("Rented Van", "Rented Toyota Vitz", "Rented Van");
+        assertTrue(emptySnapshot.isEmpty());
+        assertEquals(expected, kofi.getHistory());
+        assertEquals(expected, depot.getRenterHistory(kofi));
+        assertEquals(expected, second.getRenterHistory(kofi));
+        assertEquals(1, depot.getRentals().size());
+        assertEquals(2, second.getRentals().size());
+        assertEquals("RETURNED", second.getRentals().getFirst().getStatus());
+        assertTrue(ama.getHistory().isEmpty());
+    }
+
+    @Test
+    void failedBookingsAndRepeatedReturnsCannotChangeCombinedHistory() {
+        Depot second = new Depot("Second depot");
+        second.addRenter(kofi);
+        Vehicle car = new Vehicle("Second car", "SECOND-2", 100, 300, StandardChargingRules.ECONOMY);
+        second.addVehicle(car);
+        capture(() -> { depot.rent(kofi, vitz, 1); second.rent(kofi, car, 1); });
+        List<String> before = kofi.getHistory();
+        assertThrows(IllegalStateException.class, () -> second.rent(kofi, car, 1));
+        assertThrows(IllegalArgumentException.class, () -> depot.rent(kofi, prado, 0));
+        assertThrows(IllegalArgumentException.class, () -> second.rent(ama, car, 1));
+        capture(() -> { second.returnVehicle(car); second.returnVehicle(car); });
+        assertEquals(before, kofi.getHistory());
+        assertEquals(before, depot.getRenterHistory(kofi));
+        assertFalse(depot.isAvailable(vitz));
+        assertTrue(second.isAvailable(car));
+    }
+
+    @Test
+    void historySourcesRequireActualRegistrationAndCannotBeDuplicatedOrEdited() {
+        Depot second = new Depot("Second depot");
+        Renter sameName = new Renter("Kofi Mensah", "CASUAL");
+        second.addRenter(sameName);
+        assertThrows(IllegalArgumentException.class, () -> kofi.registerDepot(second));
+        assertThrows(NullPointerException.class, () -> kofi.registerDepot(null));
+        assertThrows(NullPointerException.class, () -> depot.getRenterHistory(null));
+        kofi.registerDepot(depot);
+        kofi.registerDepot(depot);
+        capture(() -> depot.rent(kofi, vitz, 1));
+        assertEquals(List.of("Rented Toyota Vitz"), kofi.getHistory());
+        assertTrue(sameName.getHistory().isEmpty());
+        assertThrows(UnsupportedOperationException.class, () -> kofi.getHistory().add("Fake rental"));
+        assertThrows(UnsupportedOperationException.class, () -> second.getRenterHistory(kofi).clear());
+        Rental rental = depot.getRentals().getFirst();
+        rental.returned();
+        assertEquals(List.of("Rented Toyota Vitz"), kofi.getHistory());
+        assertEquals("ACTIVE", depot.getRentals().getFirst().getStatus());
+    }
+
     // Console capture and shared static ID counters require sequential test execution.
     private static String capture(Runnable action) {
         PrintStream original = System.out;

@@ -35,6 +35,7 @@ public class Depot {
             throw new IllegalArgumentException("Renter is already registered: " + r.getId());
         }
         renters.add(r);
+        r.registerDepot(this);
     }
 
     // Rent a vehicle to a renter for a number of days. The rules depend on the class of vehicle.
@@ -104,9 +105,6 @@ public class Depot {
 
     public List<String> getRenterHistory(Renter renter) {
         Objects.requireNonNull(renter, "Renter is required");
-        return rentals.stream()
-                .filter(rental -> rental.getRenterId() == renter.getId())
-                .map(rental -> "Rented " + rental.getVehicleModel())
-                .toList();
+        return renter.getHistory();
     }
 }
