@@ -44,7 +44,7 @@ mvn clean test
 
 Parameterized inputs count as separate cases. Tests create fresh fixtures and compare IDs relatively rather than assuming counters start at 1. Execution is sequential because console capture and the application's static counters are shared. Console capture restores System.out even when a check fails. Maven fails if no tests are discovered.
 
-The suite checks the original booking confirmation, but does not automatically compare every report line, receipt field, or a successful future van policy. Historical report comparisons are retained below. See [test instructions](src/test/README.md) for more detail. Tests support correctness; receipts remain the chosen extra business feature.
+The suite checks the original booking confirmation, but does not automatically compare every report line, receipt field, or a successful future van policy. Historical report comparisons are retained below. Tests support correctness; receipts remain the chosen extra business feature.
 
 ## Submission contents
 
@@ -80,7 +80,6 @@ src/main/java/com/dovewing/
     `-- InputValidation.java       # Checks text, amounts, and positive duration.
 
 src/test/
-|-- README.md                     # Test commands, scope, and isolation choices.
 `-- java/com/dovewing/
     |-- model/ModelValidationTest.java
     `-- service/DepotRegressionTest.java
