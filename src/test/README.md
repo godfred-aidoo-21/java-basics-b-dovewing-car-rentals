@@ -14,4 +14,6 @@ Use `mvn clean test` after replacing an older test suite to remove stale compile
 
 Tests use fresh fixtures and relative ID assertions. Maven explicitly disables parallel JUnit execution because tests capture System.out and the application uses shared static counters. The output stream is restored in a finally block, including when assertions fail.
 
-Receipts remain the extra business feature. These checks provide repeatable verification rather than replacing that feature. Cross-depot checks now verify combined booking order, retained returned entries, rejected-operation behaviour, read-only snapshots, distinct same-name renters, and guarded/deduplicated history sources. The final submission documentation is a separate follow-up step.
+Receipts remain the extra business feature. These checks provide repeatable verification rather than replacing that feature. Cross-depot checks now verify combined booking order, retained returned entries, rejected-operation behaviour, read-only snapshots, distinct same-name renters, and guarded/deduplicated history sources. See the root README for the final submission design and evidence notes.
+
+Recorded result on 11 November 2026: 43 cases, 0 failures, 0 errors, and 0 skipped. The focused suite has 22 DepotRegressionTest cases and 21 ModelValidationTest cases. Full report/receipt text comparisons and a successful future van policy are outside its automated coverage.

@@ -1,4 +1,4 @@
-﻿# Dovewing Car Rentals: Diagnosis and Proposed Design
+# Dovewing Car Rentals: Diagnosis and Proposed Design
 
 ## What the business needs
 
@@ -168,3 +168,15 @@ These tests will give the next developer evidence that a pricing change has not 
 Commit this diagnosis and its diagram before the first source-code change. Make incremental commits during the rebuild so the reviewer can follow the work.
 
 The README will explain the final design choices, any departures from this proposal, and the actual test results. The submitted repository will contain the rebuilt code, this diagnosis and diagram, the tests, the design notes, and the commit history.
+
+## Final submission reconciliation
+
+**Added after implementation, 11 November 2026.** The analysis and design sketch above remain the original pre-build proposal committed in `2bbb2ca`, before source commit `aa94489`. Future-tense statements above describe that proposal, not missing current deliverables.
+
+The final project retains the planned lifecycle ownership, availability derived from active rentals, protected records, separate charging policies, and reporting. The implementation uses responsibility-based packages and a shared enum for the existing economy/premium policies.
+
+Optional rental receipts are the selected extra business improvement. A maintained regression suite is also delivered as verification: 43 cases pass, covering pricing, lifecycle rules, protected data, validation, and combined renter history across depots. It does not automate full report-output comparisons or a successful test-only van policy from the original proposal; report comparisons remain captured manual evidence.
+
+An intermediate implementation limited history to one depot. That limitation was corrected: Renter now derives read-only history across registered depots in booking order, and the suite checks it. Additional validation rejections and source API changes remain intentional differences and are listed explicitly in the README.
+
+See [README.md](README.md) for the completed structure, run commands, final design decisions, receipt usage, exact coverage and limitations, and evidence links. This addendum reconciles the delivered work with the original proposal without changing the original diagnosis or its commit order.
